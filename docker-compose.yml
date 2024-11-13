@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  game-2048:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src/index.html:/usr/share/nginx/html/index.html
+      - ./src/style.css:/usr/share/nginx/html/style.css
+      - ./src/app.js:/usr/share/nginx/html/app.js

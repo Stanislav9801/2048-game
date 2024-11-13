@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>2048 Game</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #1a4a6e, #2c7fb8);
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+            /* Центрируем содержимое */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 450px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            /* Убираем margin сверху, т.к. используем flex для центрирования */
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin: 0;
+        }
+
+        .score-container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 0 auto;
+        }
+
+        .cell {
+            background: rgba(238, 228, 218, 0.35);
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 35px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .cell-2 { background: #7fdbda; }
+        .cell-4 { background: #5bc8c8; }
+        .cell-8 { background: #45b7b7; }
+        .cell-16 { background: #2fa6a6; }
+        .cell-32 { background: #199595; }
+        .cell-64 { background: #038484; }
+        .cell-128 { background: #4aada2; font-size: 30px; }
+        .cell-256 { background: #45a195; font-size: 30px; }
+        .cell-512 { background: #409588; font-size: 30px; }
+        .cell-1024 { background: #3b897c; font-size: 25px; }
+        .cell-2048 { background: #367d71; font-size: 25px; }
+
+        .game-message {
+            margin-top: 20px;
+        }
+
+        .game-message p {
+            color: #fff;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin: 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4aada2;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #367d71;
+        }
+
+        .snowflake {
+            position: fixed;
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px #fff;
+            user-select: none;
+            z-index: 1000;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>2048</h1>
+            <div class="score-container">
+                Score: <span id="score">0</span>
+            </div>
+        </div>
+
+        <div id="grid"></div>
+
+        <div class="game-message">
+            <p></p>
+            <button id="restart">New Game</button>
+        </div>
+    </div>
+
+    <script>
+        function createSnowflakes() {
+            const snowflakesCount = 50;
+            const container = document.body;
+            
+            for (let i = 0; i < snowflakesCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.innerHTML = '❄';
+                snowflake.style.left = `${Math.random() * 100}vw`;
+                snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                snowflake.style.opacity = Math.random();
+                snowflake.style.fontSize = `${Math.random() * 10 + 10}px`;
+                container.appendChild(snowflake);
+            }
+        }
+
+        class Game2048 {
+            constructor() {
+                this.grid = Array(4).fill().map(() => Array(4).fill(0));
+                this.score = 0;
+                this.gridElement = document.getElementById('grid');
+                this.scoreElement = document.getElementById('score');
+                this.messageElement = document.querySelector('.game-message p');
+                this.init();
+            }
+
+            init() {
+                // Create grid cells
+                for (let i = 0; i < 16; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    this.gridElement.appendChild(cell);
+                }
+
+                // Add initial tiles
+                this.addRandomTile();
+                this.addRandomTile();
+                this.updateDisplay();
+
+                // Add event listeners
+                document.addEventListener('keydown', this.handleKeyPress.bind(this));
+                document.getElementById('restart').addEventListener('click', () => {
+                    this.restart();
+                });
+            }
+
+            addRandomTile() {
+                const emptyCells = [];
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        if (this.grid[i][j] === 0) {
+                            emptyCells.push({x: i, y: j});
+                        }
+                    }
+                }
+                if (emptyCells.length > 0) {
+                    const {x, y} = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    this.grid[x][y] = Math.random() < 0.9 ? 2 : 4;
+                }
+            }
+
+            updateDisplay() {
+                const cells = document.querySelectorAll('.cell');
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        const value = this.grid[i][j];
+                        const cell = cells[i * 4 + j];
+                        cell.textContent = value || '';
+                        cell.className = `cell ${value ? 'cell-' + value : ''}`;
+                    }
+                }
+                this.scoreElement.textContent = this.score;
+            }
+
+            move(direction) {
+                let moved = false;
+                const newGrid = JSON.parse(JSON.stringify(this.grid));
+
+                // Helper function to move and merge tiles
+                const moveTiles = (row) => {
+                    const filtered = row.filter(cell => cell !== 0);
+                    for (let i = 0; i < filtered.length - 1; i++) {
+                        if (filtered[i] === filtered[i + 1]) {
+                            filtered[i] *= 2;
+                            this.score += filtered[i];
+                            filtered.splice(i + 1, 1);
+                            moved = true;
+                        }
+                    }
+                    while (filtered.length < 4) filtered.push(0);
+                    return filtered;
+                };
+
+                // Process each row/column based on direction
+                if (direction === 'left' || direction === 'right') {
+                    for (let i = 0; i < 4; i++) {
+                        let row = this.grid[i];
+                        if (direction === 'right') row = row.reverse();
+                        row = moveTiles(row);
+                        if (direction === 'right') row = row.reverse();
+                        if (row.join(',') !== this.grid[i].join(',')) moved = true;
+                        newGrid[i] = row;
+                    }
+                } else {
+                    for (let j = 0; j < 4; j++) {
+                        let column = this.grid.map(row => row[j]);
+                        if (direction === 'down') column = column.reverse();
+                        column = moveTiles(column);
+                        if (direction === 'down') column = column.reverse();
+                        for (let i = 0; i < 4; i++) {
+                            if (newGrid[i][j] !== column[i]) moved = true;
+                            newGrid[i][j] = column[i];
+                        }
+                    }
+                }
+
+                if (moved) {
+                    this.grid = newGrid;
+                    this.addRandomTile();
+                    this.updateDisplay();
+                    if (this.isGameOver()) {
+                        this.messageElement.textContent = 'Game Over!';
+                    } else if (this.hasWon()) {
+                        this.messageElement.textContent = 'You Won!';
+                    }
+                }
+            }
+
+            handleKeyPress(event) {
+                const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+                if (arrowKeys.includes(event.key)) {
+                    event.preventDefault(); // Предотвращаем прокрутку страницы
+                    switch(event.key) {
+                        case 'ArrowLeft': this.move('left'); break;
+                        case 'ArrowRight': this.move('right'); break;
+                        case 'ArrowUp': this.move('up'); break;
+                        case 'ArrowDown': this.move('down'); break;
+                    }
+                }
+            }
+
+            isGameOver() {
+                // Check for empty cells
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        if (this.grid[i][j] === 0) return false;
+                    }
+                }
+                // Check for possible merges
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        const current = this.grid[i][j];
+                        if ((j < 3 && current === this.grid[i][j + 1]) ||
+                            (i < 3 && current === this.grid[i + 1][j])) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            hasWon() {
+                return this.grid.some(row => row.some(cell => cell === 2048));
+            }
+
+            restart() {
+                this.grid = Array(4).fill().map(() => Array(4).fill(0));
+                this.score = 0;
+                this.messageElement.textContent = '';
+                this.addRandomTile();
+                this.addRandomTile();
+                this.updateDisplay();
+            }
+        }
+
+        window.onload = () => {
+            createSnowflakes();
+            new Game2048();
+        };
+    </script>
+</body>
+</html>

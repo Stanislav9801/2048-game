@@ -1,0 +1,118 @@
+body {
+    background: linear-gradient(to bottom, #1a4a6e, #2c7fb8);
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.container {
+    width: 450px;
+    margin: 50px auto;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.score-container {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: bold;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: repeat(4, 100px);
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 0 auto;
+}
+
+.cell {
+    background: rgba(238, 228, 218, 0.35);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 35px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.cell-2 { background: #7fdbda; }
+.cell-4 { background: #5bc8c8; }
+.cell-8 { background: #45b7b7; }
+.cell-16 { background: #2fa6a6; }
+.cell-32 { background: #199595; }
+.cell-64 { background: #038484; }
+.cell-128 { background: #4aada2; font-size: 30px; }
+.cell-256 { background: #45a195; font-size: 30px; }
+.cell-512 { background: #409588; font-size: 30px; }
+.cell-1024 { background: #3b897c; font-size: 25px; }
+.cell-2048 { background: #367d71; font-size: 25px; }
+
+.game-message {
+    margin-top: 20px;
+}
+
+.game-message p {
+    color: #fff;
+    font-size: 24px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+button {
+    padding: 10px 20px;
+    background: #4aada2;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #367d71;
+}
+
+.snowflake {
+    position: fixed;
+    color: #fff;
+    font-size: 1em;
+    font-family: Arial, sans-serif;
+    text-shadow: 0 0 5px #fff;
+    user-select: none;
+    z-index: 1000;
+    pointer-events: none;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-100vh) rotate(0deg);
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+    }
+} 
