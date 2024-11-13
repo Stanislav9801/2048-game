@@ -6,6 +6,15 @@ A beautiful implementation of the classic 2048 game with a unique winter theme a
 
 ![2048 Game Preview](preview.png)
 
+<!-- ## 🎯 Live Demo   -->
+
+<!-- <div style="display: flex; justify-content: center; align-items: center;">
+    <iframe src="https://github.com/Stanislav9801/2048-game/blob/main/2048-complete.html" style="width: 500px; height: 700px; border: none;"></iframe>
+</div> -->
+
+Try it out right here! Use your arrow keys to play.
+
+
 ## ✨ Features
 
 - 🎯 Classic 2048 gameplay mechanics
